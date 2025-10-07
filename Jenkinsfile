@@ -1,39 +1,40 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'   // Nom du Maven défini dans Jenkins Global Tool Configuration
-        jdk 'JDK17'      // Nom du JDK défini dans Jenkins
-    }
-
     environment {
-        SONARQUBE_ENV = 'sq1'   // Nom exact de ton serveur SonarQube dans Jenkins
+        SONARQUBE_ENV = 'sq1'   // Nom de ton serveur SonarQube dans Jenkins
     }
 
     stages {
-        stage('Checkout') {
+        stage('Pull from Git') {
             steps {
                 git branch: 'main', url: 'https://github.com/emirzuker/devops.git'
             }
         }
 
-        stage('Clean & Build') {
+        stage('Clean') {
             steps {
-                sh 'mvn clean compile'
+                sh '$M2_HOME/bin/mvn clean'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh '$M2_HOME/bin/mvn compile'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh 'mvn sonar:sonar'
+                    sh '$M2_HOME/bin/mvn sonar:sonar'
                 }
             }
         }
 
         stage('Package') {
             steps {
-                sh 'mvn package'
+                sh '$M2_HOME/bin/mvn package'
             }
         }
     }
